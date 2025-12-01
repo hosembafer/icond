@@ -43,3 +43,6 @@ generated/
 tmp/
 temp/
 *.tmp
+
+.icondconfig.mjs
+svg

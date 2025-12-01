@@ -23,12 +23,12 @@ export async function fetchCommand(): Promise<void> {
     const figmaExportConfig: BaseCommandOptions & ComponentsCommandOptions = {
       fileId: config.figma.fileId,
       token: config.figma.token,
-      onlyFromPages: config.figma.pages,
+        onlyFromPages: config.figma.pages,
       outputters: [
         asComponentsAsSvg({
           output: outputPath,
           getDirname: () => '',
-          getBasename: (options) => options.basename,
+          getBasename: (options) => `${options.basename}.svg`,
         }),
       ],
       transformers: config.figma.svgo
