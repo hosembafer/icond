@@ -100,7 +100,7 @@ export const defaultConfig: Omit<IcondConfig, 'figma' | 'library'> = {
   },
   iconGeneration: {
     conversionType: 'files',
-    prefix: 'icon',
+    prefix: '',
     interfaceName: 'Icon',
     typeName: 'IconName',
     delimiter: 'CAMEL',

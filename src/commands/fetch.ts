@@ -28,7 +28,7 @@ export async function fetchCommand(): Promise<void> {
         asComponentsAsSvg({
           output: outputPath,
           getDirname: () => '',
-          getBasename: (options) => `${options.basename}.svg`,
+          getBasename: (options) => `${options.basename.replace(/\s+/g, '-')}.svg`,
         }),
       ],
       transformers: config.figma.svgo
