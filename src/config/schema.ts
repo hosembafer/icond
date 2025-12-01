@@ -1,113 +1,124 @@
-import { z } from 'zod';
-
 /**
  * SVGO plugin configuration
  */
-const svgoPluginSchema = z.object({
-  name: z.string(),
-  active: z.boolean().optional(),
-  params: z.record(z.any()).optional(),
-});
+export interface SvgoPlugin {
+  name: string;
+  active?: boolean;
+  params?: Record<string, any>;
+}
 
 /**
  * Figma configuration
  */
-const figmaConfigSchema = z.object({
-  token: z.string().min(1, 'Figma token is required'),
-  fileId: z.string().min(1, 'Figma file ID is required'),
-  pages: z.array(z.string()).optional().describe('Optional: filter specific pages to export'),
-  svgo: z
-    .object({
-      plugins: z.array(svgoPluginSchema).optional(),
-    })
-    .optional()
-    .describe('SVGO optimization configuration'),
-});
+export interface FigmaConfig {
+  token: string;
+  fileId: string;
+  pages?: string[];
+  svgo?: {
+    plugins?: SvgoPlugin[];
+  };
+}
 
 /**
  * Output directories configuration
  */
-const outputConfigSchema = z.object({
-  svg: z.string().default('./svg').describe('Directory for raw SVG files from Figma'),
-  icons: z.string().default('./src/icons').describe('Directory for generated TypeScript files'),
-  dist: z.string().default('./dist').describe('Directory for built library'),
-});
+export interface OutputConfig {
+  svg: string;
+  icons: string;
+  dist: string;
+}
 
 /**
  * Icon generation configuration (svg-to-ts options)
  */
-const iconGenerationConfigSchema = z.object({
-  conversionType: z.literal('files').default('files'),
-  prefix: z.string().default('icon').describe('Prefix for generated icon constants'),
-  interfaceName: z.string().default('Icon').describe('Name of the generated interface'),
-  typeName: z.string().default('IconName').describe('Name of the generated type'),
-  delimiter: z
-    .enum(['CAMEL', 'KEBAB', 'SNAKE', 'UPPER', 'NONE'])
-    .default('CAMEL')
-    .describe('Naming convention for icon constants'),
-  barrelFileName: z.string().default('index').describe('Name of the barrel export file'),
-  compileSources: z.boolean().default(false).describe('Compile to JavaScript instead of TypeScript'),
-  generateType: z.boolean().default(true).describe('Generate TypeScript types'),
-  exportCompleteIconSet: z.boolean().default(false).describe('Export complete icon set as array'),
-  modelFileName: z.string().default('icon.model').describe('Name of the model file containing types'),
-  iconsFolderName: z.string().default('').describe('Subfolder name for icon files'),
-});
+export interface IconGenerationConfig {
+  conversionType: 'files';
+  prefix: string;
+  interfaceName: string;
+  typeName: string;
+  delimiter: 'CAMEL' | 'KEBAB' | 'SNAKE' | 'UPPER' | 'NONE';
+  barrelFileName: string;
+  compileSources: boolean;
+  generateType: boolean;
+  exportCompleteIconSet: boolean;
+  modelFileName: string;
+  iconsFolderName: string;
+}
 
 /**
  * Library package configuration
  */
-const libraryConfigSchema = z.object({
-  name: z.string().min(1, 'Library name is required'),
-  version: z.string().default('1.0.0'),
-  description: z.string().optional(),
-  author: z.string().optional(),
-  license: z.string().default('MIT'),
-  repository: z.string().optional(),
-  keywords: z.array(z.string()).optional(),
-});
+export interface LibraryConfig {
+  name: string;
+  version: string;
+  description?: string;
+  author?: string;
+  license: string;
+  repository?: string;
+  keywords?: string[];
+}
 
 /**
  * Publishing configuration
  */
-const publishConfigSchema = z.object({
-  registry: z.string().default('https://registry.npmjs.org'),
-  access: z.enum(['public', 'restricted']).default('public'),
-  tag: z.string().optional().describe('npm dist-tag'),
-});
+export interface PublishConfig {
+  registry: string;
+  access: 'public' | 'restricted';
+  tag?: string;
+}
 
 /**
  * Build configuration
  */
-const buildConfigSchema = z.object({
-  formats: z.array(z.enum(['esm', 'cjs'])).default(['esm', 'cjs']),
-  minify: z.boolean().default(true),
-  sourcemap: z.boolean().default(true),
-  target: z.string().default('es2020').describe('Build target for esbuild'),
-});
+export interface BuildConfig {
+  formats: ('esm' | 'cjs')[];
+  minify: boolean;
+  sourcemap: boolean;
+  target: string;
+}
 
 /**
  * Main configuration schema
  */
-export const icondConfigSchema = z.object({
-  figma: figmaConfigSchema,
-  output: outputConfigSchema.optional().default({}),
-  iconGeneration: iconGenerationConfigSchema.optional().default({}),
-  library: libraryConfigSchema,
-  publish: publishConfigSchema.optional().default({}),
-  build: buildConfigSchema.optional().default({}),
-});
-
-export type IcondConfig = z.infer<typeof icondConfigSchema>;
-export type FigmaConfig = z.infer<typeof figmaConfigSchema>;
-export type OutputConfig = z.infer<typeof outputConfigSchema>;
-export type IconGenerationConfig = z.infer<typeof iconGenerationConfigSchema>;
-export type LibraryConfig = z.infer<typeof libraryConfigSchema>;
-export type PublishConfig = z.infer<typeof publishConfigSchema>;
-export type BuildConfig = z.infer<typeof buildConfigSchema>;
+export interface IcondConfig {
+  figma: FigmaConfig;
+  output: OutputConfig;
+  iconGeneration: IconGenerationConfig;
+  library: LibraryConfig;
+  publish: PublishConfig;
+  build: BuildConfig;
+}
 
 /**
- * Helper function to define config with type safety
+ * Default configuration values
  */
-export function defineConfig(config: IcondConfig): IcondConfig {
-  return icondConfigSchema.parse(config);
-}
+export const defaultConfig: Omit<IcondConfig, 'figma' | 'library'> = {
+  output: {
+    svg: './svg',
+    icons: './src/icons',
+    dist: './dist',
+  },
+  iconGeneration: {
+    conversionType: 'files',
+    prefix: 'icon',
+    interfaceName: 'Icon',
+    typeName: 'IconName',
+    delimiter: 'CAMEL',
+    barrelFileName: 'index',
+    compileSources: false,
+    generateType: true,
+    exportCompleteIconSet: false,
+    modelFileName: 'icon.model',
+    iconsFolderName: '',
+  },
+  publish: {
+    registry: 'https://registry.npmjs.org',
+    access: 'public',
+  },
+  build: {
+    formats: ['esm', 'cjs'],
+    minify: true,
+    sourcemap: true,
+    target: 'es2020',
+  },
+};

@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-import { Command } from 'commander';
 import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -8,87 +7,69 @@ import pc from 'picocolors';
 import { initCommand } from './commands/init.js';
 import { fetchCommand } from './commands/fetch.js';
 import { buildCommand } from './commands/build.js';
-import { publishCommand } from './commands/publish.js';
 import { libraryPublishCommand } from './commands/library-publish.js';
 
-// Get package.json for version
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const packageJson = JSON.parse(
   readFileSync(resolve(__dirname, '../package.json'), 'utf-8')
 );
 
-const program = new Command();
+const command = process.argv[2];
 
-program
-  .name('icond')
-  .description('Icon library solution that fetches icons from Figma and creates tree-shakable TypeScript declarations')
-  .version(packageJson.version);
+function showHelp() {
+  console.log(`
+${pc.cyan('icond')} v${packageJson.version}
 
-// Init command
-program
-  .command('init')
-  .description('Create icond.config.ts configuration file')
-  .option('-f, --force', 'Overwrite existing config file')
-  .action(async (options) => {
-    await initCommand(options);
-  });
+Minimal tool to transfer icons from Figma to a published npm library
 
-// Fetch command
-program
-  .command('fetch')
-  .description('Fetch icons from Figma')
-  .option('-c, --config <path>', 'Path to config file')
-  .option('--clean', 'Clean output directory before fetching')
-  .action(async (options) => {
-    await fetchCommand(options);
-  });
+${pc.yellow('Commands:')}
+  init      Create .icondconfig.mjs
+  fetch     Fetch icons from Figma
+  build     Build icon library
+  publish   Publish library to npm
 
-// Build command
-program
-  .command('build')
-  .description('Build icon library from SVG files')
-  .option('-c, --config <path>', 'Path to config file')
-  .option('--clean', 'Clean output directories before building')
-  .action(async (options) => {
-    await buildCommand(options);
-  });
+${pc.yellow('Examples:')}
+  icond init
+  icond fetch
+  icond build
+  icond publish
+`);
+}
 
-// Publish command (for icond CLI itself)
-program
-  .command('publish')
-  .description('Publish icond CLI to npm registry')
-  .option('--dry-run', 'Run without actually publishing')
-  .option('--tag <tag>', 'Publish with a specific npm tag')
-  .option('--registry <url>', 'Specify npm registry URL')
-  .action(async (options) => {
-    await publishCommand(options);
-  });
+async function main() {
+  if (!command || command === 'help' || command === '--help' || command === '-h') {
+    showHelp();
+    process.exit(0);
+  }
 
-// Library publish command (for generated icon library)
-program
-  .command('library:publish')
-  .description('Publish generated icon library to npm registry')
-  .option('-c, --config <path>', 'Path to config file')
-  .option('--dry-run', 'Run without actually publishing')
-  .option('--tag <tag>', 'Publish with a specific npm tag')
-  .action(async (options) => {
-    await libraryPublishCommand(options);
-  });
+  if (command === '--version' || command === '-v') {
+    console.log(packageJson.version);
+    process.exit(0);
+  }
 
-// Error handling
-program.exitOverride();
-
-try {
-  await program.parseAsync(process.argv);
-} catch (error) {
-  if (error instanceof Error) {
-    // Handle commander errors
-    if ('code' in error && error.code !== 'commander.help') {
-      console.error(pc.red('Error:'), error.message);
-      process.exit(1);
+  try {
+    switch (command) {
+      case 'init':
+        await initCommand();
+        break;
+      case 'fetch':
+        await fetchCommand();
+        break;
+      case 'build':
+        await buildCommand();
+        break;
+      case 'publish':
+        await libraryPublishCommand();
+        break;
+      default:
+        console.error(pc.red(`Unknown command: ${command}`));
+        console.log(`Run ${pc.cyan('icond help')} for usage`);
+        process.exit(1);
     }
-  } else {
-    console.error(pc.red('An unexpected error occurred'));
+  } catch (error) {
+    console.error(pc.red('Error:'), error instanceof Error ? error.message : String(error));
     process.exit(1);
   }
 }
+
+main();

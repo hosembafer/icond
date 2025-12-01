@@ -1,7 +1,5 @@
 /**
- * icond - Icon library solution that fetches icons from Figma
- * and creates tree-shakable TypeScript declarations
+ * icond - Minimal tool to transfer icons from Figma to published npm library
  */
 
-export { defineConfig } from './config/schema.js';
 export type { IcondConfig } from './config/schema.js';
