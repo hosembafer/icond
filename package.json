@@ -1,0 +1,58 @@
+{
+  "name": "icond",
+  "version": "1.0.0",
+  "description": "CLI tool for creating tree-shakable icon libraries from Figma",
+  "type": "module",
+  "bin": {
+    "icond": "./dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "node scripts/build.js",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "icons",
+    "figma",
+    "svg",
+    "typescript",
+    "cli",
+    "tree-shaking",
+    "icon-library"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@figma-export/core": "^5.0.0",
+    "@figma-export/output-components-as-svg": "^5.0.0",
+    "@figma-export/transform-svg-with-svgo": "^5.0.0",
+    "@figma-export/types": "^5.0.0",
+    "commander": "^12.0.0",
+    "cosmiconfig": "^9.0.0",
+    "fast-glob": "^3.3.2",
+    "picocolors": "^1.0.0",
+    "svg-to-ts": "^12.0.0",
+    "svgo": "^3.2.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "esbuild": "^0.20.0",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
