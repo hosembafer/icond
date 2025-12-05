@@ -92,7 +92,14 @@ export async function fetchCommand(): Promise<void> {
         asComponentsAsSvg({
           output: outputPath,
           getDirname: () => '',
-          getBasename: (options) => `${options.basename.replace(/\s+/g, '-')}.svg`,
+          getBasename: (options) => {
+            // Trim whitespace, replace spaces with dashes, and clean up
+            const cleaned = options.basename
+              .trim()                      // Remove leading/trailing spaces
+              .replace(/\s+/g, '-')       // Replace spaces with dashes
+              .replace(/-+/g, '-');       // Remove consecutive dashes
+            return `${cleaned}.svg`;
+          },
         }),
       ],
       transformers: config.figma.svgo

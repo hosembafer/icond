@@ -6,18 +6,20 @@ import pc from 'picocolors';
 /**
  * Validate and apply defaults to configuration
  */
-function validateConfig(config: Partial<IcondConfig>): IcondConfig {
-  // Required fields
-  if (!config.figma?.token) {
-    throw new Error('figma.token is required - set FIGMA_TOKEN environment variable or add to config');
-  }
-  if (!config.figma?.fileId) {
-    throw new Error('figma.fileId is required');
+function validateConfig(config: Partial<IcondConfig>, requireFigma = true): IcondConfig {
+  // Only validate Figma fields if required (for fetch command)
+  if (requireFigma) {
+    if (!config.figma?.token) {
+      throw new Error('figma.token is required - set FIGMA_TOKEN environment variable or add to config');
+    }
+    if (!config.figma?.fileId) {
+      throw new Error('figma.fileId is required');
+    }
   }
 
-  // Merge with defaults
+  // Merge with defaults - make figma optional when not required
   return {
-    figma: config.figma,
+    figma: config.figma || { token: '', fileId: '' },
     output: { ...defaultConfig.output, ...config.output },
     iconGeneration: { ...defaultConfig.iconGeneration, ...config.iconGeneration },
     build: { ...defaultConfig.build, ...config.build },
@@ -27,7 +29,7 @@ function validateConfig(config: Partial<IcondConfig>): IcondConfig {
 /**
  * Load and validate icond configuration from .icondconfig.mjs
  */
-export async function loadConfig(): Promise<IcondConfig> {
+export async function loadConfig(requireFigma = true): Promise<IcondConfig> {
   const configPath = resolve(process.cwd(), '.icondconfig.mjs');
 
   if (!existsSync(configPath)) {
@@ -48,7 +50,7 @@ export async function loadConfig(): Promise<IcondConfig> {
     }
 
     // Validate and apply defaults to config
-    const validatedConfig = validateConfig(config);
+    const validatedConfig = validateConfig(config, requireFigma);
 
     console.log(pc.dim(`Loaded config from: ${configPath}`));
 
@@ -61,6 +63,13 @@ export async function loadConfig(): Promise<IcondConfig> {
     }
     throw error;
   }
+}
+
+/**
+ * Load config for build command (doesn't require Figma credentials)
+ */
+export async function loadConfigForBuild(): Promise<IcondConfig> {
+  return loadConfig(false);
 }
 
 /**

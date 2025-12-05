@@ -5,7 +5,7 @@ import { existsSync } from 'node:fs';
 import { exec } from 'node:child_process';
 import { promisify } from 'node:util';
 import fg from 'fast-glob';
-import { loadConfig } from '../config/loader.js';
+import { loadConfigForBuild } from '../config/loader.js';
 import { ensureDir, cleanDir } from '../utils/fs.js';
 import { logger } from '../utils/logger.js';
 import pc from 'picocolors';
@@ -17,7 +17,7 @@ const execAsync = promisify(exec);
  */
 export async function buildCommand(): Promise<void> {
   try {
-    const config = await loadConfig();
+    const config = await loadConfigForBuild();
 
     const svgPath = resolve(process.cwd(), config.output.svg);
     const iconsPath = resolve(process.cwd(), config.output.icons);
@@ -102,7 +102,21 @@ export async function buildCommand(): Promise<void> {
     await Promise.all(buildPromises);
 
     logger.step(3, 3, 'Generating TypeScript declarations...');
-    await execAsync(`tsc ${entryPoint} --declaration --emitDeclarationOnly --outDir ${distPath}`);
+
+    // Use npx to run the local TypeScript installation
+    try {
+      await execAsync(`npx tsc ${entryPoint} --declaration --emitDeclarationOnly --outDir ${distPath}`);
+    } catch (tscError) {
+      // If tsc fails, try to provide a helpful error message
+      if (tscError instanceof Error && tscError.message.includes('tsc')) {
+        logger.warn('TypeScript compiler not found. Skipping declaration generation.');
+        logger.info('To generate TypeScript declarations, install TypeScript:');
+        console.log(pc.cyan('  npm install --save-dev typescript'));
+      } else {
+        // Re-throw if it's not a missing tsc error
+        throw tscError;
+      }
+    }
 
     logger.success(`Built library to ${pc.cyan(config.output.dist)}`);
     console.log();
