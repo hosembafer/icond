@@ -5,7 +5,7 @@ import type { BaseCommandOptions, ComponentsCommandOptions } from '@figma-export
 import { resolve, join } from 'node:path';
 import { readFileSync, writeFileSync, renameSync, readdirSync, statSync } from 'node:fs';
 import { loadConfig } from '../config/loader.js';
-import { ensureDir } from '../utils/fs.js';
+import { ensureDir, cleanDir } from '../utils/fs.js';
 import { logger } from '../utils/logger.js';
 import pc from 'picocolors';
 
@@ -80,6 +80,7 @@ export async function fetchCommand(): Promise<void> {
     const config = await loadConfig();
     const outputPath = resolve(process.cwd(), config.output.svg);
 
+    await cleanDir(outputPath);
     await ensureDir(outputPath);
 
     logger.info('Fetching icons from Figma...');
@@ -93,11 +94,12 @@ export async function fetchCommand(): Promise<void> {
           output: outputPath,
           getDirname: () => '',
           getBasename: (options) => {
-            // Trim whitespace, replace spaces with dashes, and clean up
+            // Trim whitespace and dashes, replace spaces with dashes, and clean up
             const cleaned = options.basename
               .trim()                      // Remove leading/trailing spaces
               .replace(/\s+/g, '-')       // Replace spaces with dashes
-              .replace(/-+/g, '-');       // Remove consecutive dashes
+              .replace(/-+/g, '-')        // Remove consecutive dashes
+              .replace(/^-+|-+$/g, '');   // Remove leading/trailing dashes
             return `${cleaned}.svg`;
           },
         }),

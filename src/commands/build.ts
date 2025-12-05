@@ -34,6 +34,7 @@ export async function buildCommand(): Promise<void> {
 
     logger.info(`Found ${pc.cyan(svgFiles.length.toString())} SVG files`);
 
+    await cleanDir(iconsPath);
     await ensureDir(iconsPath);
 
     logger.step(1, 3, 'Generating TypeScript files from SVGs...');
