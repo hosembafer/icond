@@ -45,27 +45,6 @@ export interface IconGenerationConfig {
   iconsFolderName: string;
 }
 
-/**
- * Library package configuration
- */
-export interface LibraryConfig {
-  name: string;
-  version: string;
-  description?: string;
-  author?: string;
-  license: string;
-  repository?: string;
-  keywords?: string[];
-}
-
-/**
- * Publishing configuration
- */
-export interface PublishConfig {
-  registry: string;
-  access: 'public' | 'restricted';
-  tag?: string;
-}
 
 /**
  * Build configuration
@@ -84,15 +63,13 @@ export interface IcondConfig {
   figma: FigmaConfig;
   output: OutputConfig;
   iconGeneration: IconGenerationConfig;
-  library: LibraryConfig;
-  publish: PublishConfig;
   build: BuildConfig;
 }
 
 /**
  * Default configuration values
  */
-export const defaultConfig: Omit<IcondConfig, 'figma' | 'library'> = {
+export const defaultConfig: Omit<IcondConfig, 'figma'> = {
   output: {
     svg: './svg',
     icons: './src/icons',
@@ -110,10 +87,6 @@ export const defaultConfig: Omit<IcondConfig, 'figma' | 'library'> = {
     exportCompleteIconSet: false,
     modelFileName: 'icon.model',
     iconsFolderName: '',
-  },
-  publish: {
-    registry: 'https://registry.npmjs.org',
-    access: 'public',
   },
   build: {
     formats: ['esm', 'cjs'],

@@ -1,6 +1,6 @@
 # icond
 
-> Minimal tool to transfer icons from Figma to a published npm library
+> CLI tool for creating tree-shakable icon libraries from Figma
 
 [![npm version](https://img.shields.io/npm/v/icond.svg)](https://www.npmjs.com/package/icond)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -11,94 +11,92 @@
 - 📦 **Tree-shakable** - Generate individual files per icon for optimal tree-shaking
 - 🔷 **TypeScript** - Full type safety with generated types
 - ⚡ **Optimized** - Built-in SVG optimization using SVGO
-- 📤 **Publishing Ready** - Built-in command to publish your icon library
+- 🎯 **Smart Naming** - Size-based naming (24px = clean names, others get suffix)
+- 🎨 **Themeable** - Automatic `currentColor` replacement for CSS theming
+- 📝 **Git-Friendly** - Only SVGs committed, TypeScript files generated on build
+
+## Architecture
+
+`icond` is installed as a **devDependency** in your icon library package. This separation allows you to:
+- ✅ Commit SVG source files (reviewable changes)
+- ✅ Track library versions with semantic versioning
+- ✅ Generate TypeScript files on install (via `prepare` script)
+- ✅ Keep git history clean (no generated file commits)
+
+```
+@your-org/icons (git repo)          icond (npm package, devDependency)
+├── .icondconfig.mjs  ✅ committed   ├── CLI commands
+├── svg/              ✅ committed   ├── Templates
+├── package.json      ✅ committed   └── Build tooling
+├── src/icons/        ❌ generated
+└── dist/             ❌ generated
+```
 
 ## How It Works
 
 ```
-Figma → SVG Files → TypeScript Files → Bundled Library → npm Package
+Figma → SVG Files (committed) → TypeScript (generated) → Bundled Library → npm Package
 ```
 
 ## Quick Start
 
-### Installation
+### For New Packages
 
 ```bash
-npm install -g icond
+# Create package
+mkdir my-icons && cd my-icons
+npm init -y
+
+# Install icond
+npm install --save-dev icond
+
+# Initialize configuration
+npx icond init
+
+# Follow the setup instructions
 ```
 
-### Usage
-
-1. **Initialize configuration**
+### For Existing Packages
 
 ```bash
-icond init
+# Install icond as dev dependency
+npm install --save-dev icond
+
+# Create configuration file
+npx icond init
 ```
 
-This creates a `.icondconfig.mjs` file.
+### Complete Integration Guide
 
-2. **Configure**
-
-Edit `.icondconfig.mjs`:
-
-```js
-export default {
-  figma: {
-    token: process.env.FIGMA_TOKEN || '',
-    fileId: 'your-figma-file-id',
-    pages: ['page-id'], // Optional: filter specific pages
-  },
-
-  library: {
-    name: '@your-org/icons',
-    version: '1.0.0',
-    description: 'Icon library from Figma',
-    license: 'MIT',
-  },
-};
-```
-
-Set your Figma token:
-
-```bash
-export FIGMA_TOKEN='your-figma-token'
-```
-
-3. **Fetch icons from Figma**
-
-```bash
-icond fetch
-```
-
-4. **Build icon library**
-
-```bash
-icond build
-```
-
-5. **Publish your library**
-
-```bash
-icond publish
-```
+See **[INSTRUCTIONS.md](./INSTRUCTIONS.md)** for detailed step-by-step integration guide including:
+- Package.json setup
+- Environment configuration
+- Build scripts
+- Git configuration
+- CI/CD examples
+- Troubleshooting
 
 ## CLI Commands
 
 ### `icond init`
 
-Create `.icondconfig.mjs` configuration file.
+Creates `.icondconfig.mjs` configuration file in the current directory.
 
 ### `icond fetch`
 
 Fetch icons from Figma and save as SVG files.
+- Downloads from specified Figma file
+- Saves to `svg/` directory
+- Replaces colors with `currentColor`
+- Adds size suffixes (16px → `-16`, 24px → no suffix)
 
 ### `icond build`
 
 Generate TypeScript files from SVGs and bundle the library.
-
-### `icond publish`
-
-Publish the generated icon library to npm.
+- Converts SVGs to TypeScript constants
+- Generates type definitions
+- Bundles ESM and CJS formats
+- Outputs to `dist/` directory
 
 ## Configuration
 
@@ -107,16 +105,9 @@ The `.icondconfig.mjs` file supports these options:
 ```js
 export default {
   figma: {
-    token: '',           // Figma personal access token
-    fileId: '',          // Figma file ID (from URL)
-    pages: [],           // Optional: page IDs to filter
-  },
-
-  library: {
-    name: '',            // npm package name
-    version: '1.0.0',    // package version
-    description: '',     // package description
-    license: 'MIT',      // package license
+    token: process.env.FIGMA_TOKEN || '', // Figma personal access token
+    fileId: '',                           // Figma file ID (from URL)
+    pages: [],                            // Optional: specific pages to fetch
   },
 };
 ```
@@ -125,28 +116,26 @@ Advanced options use sensible defaults but can be overridden:
 
 ```js
 export default {
-  // ... figma and library config
+  // ... figma config
 
   output: {
-    svg: './svg',
-    icons: './src/icons',
-    dist: './dist',
+    svg: './svg',           // SVG files directory
+    icons: './src/icons',   // Generated TypeScript files
+    dist: './dist',         // Bundled output
   },
 
   iconGeneration: {
-    prefix: 'icon',
-    delimiter: 'CAMEL', // CAMEL | KEBAB | SNAKE | UPPER
-  },
-
-  publish: {
-    registry: 'https://registry.npmjs.org',
-    access: 'public', // public | restricted
+    prefix: '',                    // Prefix for all icon names
+    delimiter: 'CAMEL',            // CAMEL | KEBAB | SNAKE | UPPER
+    interfaceName: 'Icon',
+    typeName: 'IconName',
   },
 
   build: {
-    formats: ['esm', 'cjs'],
-    minify: true,
-    sourcemap: true,
+    formats: ['esm', 'cjs'],       // Output formats
+    minify: true,                  // Minify output
+    sourcemap: true,               // Generate sourcemaps
+    target: 'es2020',              // Build target
   },
 };
 ```
@@ -238,24 +227,7 @@ icond help
 
 ### Testing Your Icon Library
 
-```bash
-# 1. Initialize
-icond init
-
-# 2. Edit .icondconfig.mjs with your Figma details
-
-# 3. Fetch icons
-icond fetch
-
-# 4. Build library
-icond build
-
-# 5. Test locally
-cd dist && npm link
-
-# 6. Publish when ready
-icond publish
-```
+See [INSTRUCTIONS.md](./INSTRUCTIONS.md) for complete testing and local development workflow.
 
 ## License
 

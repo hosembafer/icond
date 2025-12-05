@@ -22,10 +22,23 @@ export async function initCommand(): Promise<void> {
     logger.success(`Created ${pc.cyan('.icondconfig.mjs')}`);
     console.log();
     logger.info('Next steps:');
-    console.log(pc.dim('  1. Add your Figma token and file ID to .icondconfig.mjs'));
-    console.log(pc.dim('  2. Run: ') + pc.cyan('icond fetch'));
-    console.log(pc.dim('  3. Run: ') + pc.cyan('icond build'));
-    console.log(pc.dim('  4. Run: ') + pc.cyan('icond publish'));
+    console.log();
+    console.log(pc.dim('  1. Update ') + pc.cyan('.icondconfig.mjs') + pc.dim(' with your Figma file ID'));
+    console.log();
+    console.log(pc.dim('  2. Set your Figma token:'));
+    console.log('     ' + pc.cyan('export FIGMA_TOKEN=\'your-token-here\''));
+    console.log();
+    console.log(pc.dim('  3. Add build scripts to your package.json:'));
+    console.log('     ' + pc.cyan('"scripts": {'));
+    console.log('     ' + pc.cyan('  "fetch": "icond fetch",'));
+    console.log('     ' + pc.cyan('  "build": "icond build",'));
+    console.log('     ' + pc.cyan('  "prepublishOnly": "npm run build"'));
+    console.log('     ' + pc.cyan('}'));
+    console.log();
+    console.log(pc.dim('  4. Run commands:'));
+    console.log('     ' + pc.cyan('npm run fetch') + '  # Download icons from Figma');
+    console.log('     ' + pc.cyan('npm run build') + '  # Build the library');
+    console.log('     ' + pc.cyan('npm publish') + '    # Publish to npm');
   } catch (error) {
     logger.error(`Failed to create config: ${error instanceof Error ? error.message : String(error)}`);
     process.exit(1);

@@ -6,9 +6,8 @@ import { exec } from 'node:child_process';
 import { promisify } from 'node:util';
 import fg from 'fast-glob';
 import { loadConfig } from '../config/loader.js';
-import { ensureDir, cleanDir, writeFileSafe } from '../utils/fs.js';
+import { ensureDir, cleanDir } from '../utils/fs.js';
 import { logger } from '../utils/logger.js';
-import { generatePackageJson, generateReadme } from '../templates/package.template.js';
 import pc from 'picocolors';
 
 const execAsync = promisify(exec);
@@ -102,18 +101,13 @@ export async function buildCommand(): Promise<void> {
 
     await Promise.all(buildPromises);
 
-    logger.step(3, 3, 'Generating package files...');
+    logger.step(3, 3, 'Generating TypeScript declarations...');
     await execAsync(`tsc ${entryPoint} --declaration --emitDeclarationOnly --outDir ${distPath}`);
-
-    const packageJsonContent = generatePackageJson(config.library);
-    await writeFileSafe(join(distPath, 'package.json'), packageJsonContent);
-
-    const readmeContent = generateReadme(config.library);
-    await writeFileSafe(join(distPath, 'README.md'), readmeContent);
 
     logger.success(`Built library to ${pc.cyan(config.output.dist)}`);
     console.log();
-    logger.info(`Next: ${pc.cyan('icond publish')}`);
+    logger.info('Library built successfully! You can now publish using:');
+    console.log(pc.cyan('  npm publish'));
   } catch (error) {
     logger.error(
       `Failed to build library: ${error instanceof Error ? error.message : String(error)}`

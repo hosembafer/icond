@@ -5,7 +5,6 @@ import pc from 'picocolors';
 import { initCommand } from './commands/init.js';
 import { fetchCommand } from './commands/fetch.js';
 import { buildCommand } from './commands/build.js';
-import { libraryPublishCommand } from './commands/library-publish.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const packageJson = JSON.parse(
@@ -18,19 +17,17 @@ function showHelp() {
   console.log(`
 ${pc.cyan('icond')} v${packageJson.version}
 
-Minimal tool to transfer icons from Figma to a published npm library
+CLI tool for creating tree-shakable icon libraries from Figma
 
 ${pc.yellow('Commands:')}
-  init      Create .icondconfig.mjs
-  fetch     Fetch icons from Figma
-  build     Build icon library
-  publish   Publish library to npm
+  init      Create .icondconfig.mjs configuration file
+  fetch     Fetch icons from Figma to SVG files
+  build     Build icon library from SVG files
 
 ${pc.yellow('Examples:')}
-  icond init
-  icond fetch
-  icond build
-  icond publish
+  npx icond init        # Initialize configuration
+  npx icond fetch       # Download icons from Figma
+  npx icond build       # Generate TypeScript and bundle library
 `);
 }
 
@@ -55,9 +52,6 @@ async function main() {
         break;
       case 'build':
         await buildCommand();
-        break;
-      case 'publish':
-        await libraryPublishCommand();
         break;
       default:
         console.error(pc.red(`Unknown command: ${command}`));

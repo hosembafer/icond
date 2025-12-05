@@ -9,13 +9,10 @@ import pc from 'picocolors';
 function validateConfig(config: Partial<IcondConfig>): IcondConfig {
   // Required fields
   if (!config.figma?.token) {
-    throw new Error('figma.token is required');
+    throw new Error('figma.token is required - set FIGMA_TOKEN environment variable or add to config');
   }
   if (!config.figma?.fileId) {
     throw new Error('figma.fileId is required');
-  }
-  if (!config.library?.name) {
-    throw new Error('library.name is required');
   }
 
   // Merge with defaults
@@ -23,12 +20,6 @@ function validateConfig(config: Partial<IcondConfig>): IcondConfig {
     figma: config.figma,
     output: { ...defaultConfig.output, ...config.output },
     iconGeneration: { ...defaultConfig.iconGeneration, ...config.iconGeneration },
-    library: {
-      ...config.library,
-      version: config.library.version || '1.0.0',
-      license: config.library.license || 'MIT',
-    },
-    publish: { ...defaultConfig.publish, ...config.publish },
     build: { ...defaultConfig.build, ...config.build },
   };
 }
