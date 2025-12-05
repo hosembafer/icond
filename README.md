@@ -66,16 +66,6 @@ npm install --save-dev icond
 npx icond init
 ```
 
-### Complete Integration Guide
-
-See **[INSTRUCTIONS.md](./INSTRUCTIONS.md)** for detailed step-by-step integration guide including:
-- Package.json setup
-- Environment configuration
-- Build scripts
-- Git configuration
-- CI/CD examples
-- Troubleshooting
-
 ## CLI Commands
 
 ### `icond init`
@@ -97,6 +87,13 @@ Generate TypeScript files from SVGs and bundle the library.
 - Generates type definitions
 - Bundles ESM and CJS formats
 - Outputs to `dist/` directory
+
+### `icond changelog`
+
+Track icon changes and update CHANGELOG.md.
+- Compares current icons against last git tag
+- Detects added and removed icons
+- Updates `CHANGELOG.md` in your icon library
 
 ## Configuration
 
@@ -224,10 +221,6 @@ npm link
 # Now you can use icond globally
 icond help
 ```
-
-### Testing Your Icon Library
-
-See [INSTRUCTIONS.md](./INSTRUCTIONS.md) for complete testing and local development workflow.
 
 ## License
 
