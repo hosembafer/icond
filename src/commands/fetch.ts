@@ -58,16 +58,13 @@ async function postProcessSvgFiles(outputPath: string): Promise<void> {
     }
 
     // Remove the temporary __ID suffix and add size suffix if needed
-    // File format: name__ID.svg -> icon-name.svg (for 24px) or icon-name-{width}.svg (for other sizes)
+    // File format: name__ID.svg -> name.svg (for 24px) or name-{width}.svg (for other sizes)
     const nameWithoutExt = file.replace(/\.svg$/, '');
     const nameWithoutId = nameWithoutExt.replace(/__[^_]+$/, ''); // Remove __ID suffix
 
-    // Prefix all icons with 'icon-' for consistent naming
-    const prefixedName = `icon-${nameWithoutId}`;
-
     const newFileName = width === '24'
-      ? `${prefixedName}.svg`
-      : `${prefixedName}-${width}.svg`;
+      ? `${nameWithoutId}.svg`
+      : `${nameWithoutId}-${width}.svg`;
     const newFilePath = join(outputPath, newFileName);
 
     // Only rename if the filename will change
