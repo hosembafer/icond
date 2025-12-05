@@ -1,7 +1,7 @@
 import { convertToFiles } from 'svg-to-ts';
 import { build } from 'esbuild';
 import { resolve, join } from 'node:path';
-import { existsSync, readFileSync, writeFileSync, readdirSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { exec } from 'node:child_process';
 import { promisify } from 'node:util';
 import fg from 'fast-glob';
@@ -11,63 +11,6 @@ import { logger } from '../utils/logger.js';
 import pc from 'picocolors';
 
 const execAsync = promisify(exec);
-
-/**
- * Convert a variable name to icon-prefixed format
- * Examples: delete -> iconDelete, home -> iconHome, arrowLeft -> iconArrowLeft
- */
-function toIconName(name: string): string {
-  // Capitalize first letter and prefix with 'icon'
-  return 'icon' + name.charAt(0).toUpperCase() + name.slice(1);
-}
-
-/**
- * Post-process generated TypeScript files to add 'icon' prefix to all exports
- * This creates a consistent API and avoids reserved keyword conflicts
- */
-function prefixIconExports(iconsPath: string): number {
-  const files = readdirSync(iconsPath, { recursive: true }) as string[];
-  let modifiedCount = 0;
-
-  for (const file of files) {
-    if (!file.endsWith('.ts')) continue;
-
-    const filePath = join(iconsPath, file);
-    let content = readFileSync(filePath, 'utf-8');
-    let modified = false;
-
-    // Match patterns like: export const home: {
-    // Replace with: export const iconHome: {
-    const exportPattern = /export const (\w+):/g;
-    content = content.replace(exportPattern, (match, varName) => {
-      const iconName = toIconName(varName);
-      if (iconName !== varName) {
-        modified = true;
-        return `export const ${iconName}:`;
-      }
-      return match;
-    });
-
-    // Handle re-exports in barrel files: export { home } from './icons/home';
-    // Replace with: export { home as iconHome } from './icons/home';
-    const reExportPattern = /export \{ (\w+) \}/g;
-    content = content.replace(reExportPattern, (match, varName) => {
-      const iconName = toIconName(varName);
-      if (iconName !== varName) {
-        modified = true;
-        return `export { ${varName} as ${iconName} }`;
-      }
-      return match;
-    });
-
-    if (modified) {
-      writeFileSync(filePath, content, 'utf-8');
-      modifiedCount++;
-    }
-  }
-
-  return modifiedCount;
-}
 
 /**
  * Build icon library from SVG files
@@ -110,12 +53,6 @@ export async function buildCommand(): Promise<void> {
       modelFileName: config.iconGeneration.modelFileName,
       iconsFolderName: config.iconGeneration.iconsFolderName,
     } as any);
-
-    // Post-process generated files to add 'icon' prefix to all exports
-    const modifiedCount = prefixIconExports(iconsPath);
-    if (modifiedCount > 0) {
-      logger.info(`  Prefixed ${pc.cyan(modifiedCount.toString())} icon exports`);
-    }
 
     logger.step(2, 3, 'Bundling icon library...');
 
