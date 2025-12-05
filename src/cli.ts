@@ -5,6 +5,7 @@ import pc from 'picocolors';
 import { initCommand } from './commands/init.js';
 import { fetchCommand } from './commands/fetch.js';
 import { buildCommand } from './commands/build.js';
+import { changelogCommand } from './commands/changelog.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const packageJson = JSON.parse(
@@ -20,14 +21,16 @@ ${pc.cyan('icond')} v${packageJson.version}
 CLI tool for creating tree-shakable icon libraries from Figma
 
 ${pc.yellow('Commands:')}
-  init      Create .icondconfig.mjs configuration file
-  fetch     Fetch icons from Figma to SVG files
-  build     Build icon library from SVG files
+  init         Create .icondconfig.mjs configuration file
+  fetch        Fetch icons from Figma to SVG files
+  build        Build icon library from SVG files
+  changelog    Generate changelog from icon changes
 
 ${pc.yellow('Examples:')}
   npx icond init        # Initialize configuration
   npx icond fetch       # Download icons from Figma
   npx icond build       # Generate TypeScript and bundle library
+  npx icond changelog   # Track icon changes since last tag
 `);
 }
 
@@ -52,6 +55,9 @@ async function main() {
         break;
       case 'build':
         await buildCommand();
+        break;
+      case 'changelog':
+        await changelogCommand();
         break;
       default:
         console.error(pc.red(`Unknown command: ${command}`));
