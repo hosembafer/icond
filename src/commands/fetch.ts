@@ -32,7 +32,7 @@ function replaceColorsWithCurrentColor(svgContent: string): string {
 /**
  * Post-process SVG files to add size suffix and replace colors with currentColor
  * - Replaces all fill/stroke colors with currentColor for CSS theming
- * - Renames files based on their width: 24px gets no suffix, others get -16, -20, etc.
+ * - Removes temporary ID suffix and renames files based on their width: 24px gets no suffix, others get -16, -20, etc.
  */
 async function postProcessSvgFiles(outputPath: string): Promise<void> {
   const files = readdirSync(outputPath);
@@ -57,12 +57,18 @@ async function postProcessSvgFiles(outputPath: string): Promise<void> {
       writeFileSync(filePath, svgContent, 'utf-8');
     }
 
-    // Rename file if not 24px
-    if (width !== '24') {
-      const nameWithoutExt = file.replace(/\.svg$/, '');
-      const newFileName = `${nameWithoutExt}-${width}.svg`;
-      const newFilePath = join(outputPath, newFileName);
+    // Remove the temporary __ID suffix and add size suffix if needed
+    // File format: name__ID.svg -> name.svg (for 24px) or name-{width}.svg (for other sizes)
+    const nameWithoutExt = file.replace(/\.svg$/, '');
+    const nameWithoutId = nameWithoutExt.replace(/__[^_]+$/, ''); // Remove __ID suffix
 
+    const newFileName = width === '24'
+      ? `${nameWithoutId}.svg`
+      : `${nameWithoutId}-${width}.svg`;
+    const newFilePath = join(outputPath, newFileName);
+
+    // Only rename if the filename will change
+    if (filePath !== newFilePath) {
       renameSync(filePath, newFilePath);
     }
   }
@@ -100,7 +106,9 @@ export async function fetchCommand(): Promise<void> {
               .replace(/\s+/g, '-')       // Replace spaces with dashes
               .replace(/-+/g, '-')        // Remove consecutive dashes
               .replace(/^-+|-+$/g, '');   // Remove leading/trailing dashes
-            return `${cleaned}.svg`;
+            // Use component ID to ensure uniqueness during export
+            // Icons with same name but different sizes will have different IDs
+            return `${cleaned}__${options.id}.svg`;
           },
         }),
       ],
