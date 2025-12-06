@@ -71,7 +71,7 @@ export interface IcondConfig {
  */
 export const defaultConfig: Omit<IcondConfig, 'figma'> = {
   output: {
-    svg: './svg',
+    svg: './src/svg',
     icons: './src/icons',
     dist: './dist',
   },
