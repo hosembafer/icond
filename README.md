@@ -26,9 +26,11 @@
 ```
 @your-org/icons (git repo)          icond (npm package, devDependency)
 ├── .icondconfig.mjs  ✅ committed   ├── CLI commands
-├── svg/              ✅ committed   ├── Templates
-├── package.json      ✅ committed   └── Build tooling
-├── src/icons/        ❌ generated
+├── package.json      ✅ committed   ├── Templates
+├── CHANGELOG.md      ✅ committed   └── Build tooling
+├── src/
+│   ├── svg/          👤 user preference
+│   └── icons/        👤 user preference
 └── dist/             ❌ generated
 ```
 
@@ -169,6 +171,28 @@ function HomeIcon() {
 }
 ```
 
+#### Angular
+
+```typescript
+import { DomSanitizer } from '@angular/platform-browser';
+import { MatIconRegistry } from '@angular/material/icon';
+import { icons } from '@your-org/icons';
+
+export class AppModule {
+  constructor(iconRegistry: MatIconRegistry, sanitizer: DomSanitizer) {
+    icons.forEach(icon => {
+      iconRegistry.addSvgIconLiteral(
+        icon.name,
+        sanitizer.bypassSecurityTrustHtml(icon.data)
+      );
+    });
+  }
+}
+
+// Usage in template
+// <mat-icon svgIcon="home"></mat-icon>
+```
+
 #### Vue
 
 ```vue
@@ -189,6 +213,31 @@ import { iconHome } from '@your-org/icons';
 </script>
 
 <div>{@html iconHome.data}</div>
+```
+
+## Helper Functions
+
+`icond` exports utility functions for common icon tasks:
+
+### `createNamespacedIconNameEnum`
+
+Creates namespaced icon names for multi-brand apps:
+
+```typescript
+import { icons, createNamespacedIconNameEnum } from '@your-org/icons';
+
+const IconNames = createNamespacedIconNameEnum(icons, 'myapp');
+// { home: 'myapp:home', settings: 'myapp:settings', ... }
+```
+
+### `extractViewBox`
+
+Extracts viewBox from SVG strings:
+
+```typescript
+import { iconHome, extractViewBox } from '@your-org/icons';
+
+const viewBox = extractViewBox(iconHome.data); // "0 0 24 24"
 ```
 
 ## Technology Stack
